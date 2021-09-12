@@ -90,6 +90,7 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
             gap: 1rem;
     
             .subtitle {
+                color: ${`#${correct}`};
                 font-size: 2rem;
             }
     
@@ -236,7 +237,7 @@ function App() {
                 {isCorrect ? (
                     <div className="correct">
                         <div className="subtitle">Correct!</div>
-                        You chose: {Countries[country]}
+                        <div>You chose: {Countries[country]}</div>
                         <button className="button next" onClick={nextCountry}>
                             Next Country
                         </button>
