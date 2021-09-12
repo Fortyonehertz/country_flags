@@ -46,12 +46,16 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
 
     .bottom {
         width: 100%;
-        height: 25%;
+        height: 20%;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 1rem;
         font-size: 0.8rem;
+
+        @media ${Device.lg} {
+            height: 40%;
+        }
 
         .game {
             width: 35%;
