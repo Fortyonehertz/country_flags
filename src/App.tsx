@@ -74,8 +74,10 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
 
         transition: background-color 0.6s;
 
-        &:hover {
-            background-color: ${`#${contrast}`};
+        @media (min-width: 800px) {
+            &:hover {
+                background-color: ${`#${contrast}`};
+            }
         }
 
         @media ${Device.lg} {
