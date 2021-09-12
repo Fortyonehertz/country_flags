@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import styled, { CSSProperties } from "styled-components";
+import styled from "styled-components";
 import Device from "./Breakpoints";
 
 import Countries from "./countries.json";
@@ -45,22 +44,75 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
         }
     }
 
-    .streak {
-        color: ${`#${secondary}`};
-        font-size: 0.8rem;
-    }
-
-    .options {
-        width: 35%;
+    .bottom {
+        width: 100%;
+        height: 25%;
         display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: center;
         gap: 1rem;
+        font-size: 0.8rem;
 
-        @media ${Device.lg} {
-            width: 80%;
+        .game {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+    
+            .score {
+                color: ${`#${secondary}`};
+                font-size: 0.8rem;
+            }
+        
+            .options {
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 1rem;
+        
+                @media ${Device.lg} {
+                    width: 80%;
+                }
+            }
         }
+
+        .correct {
+            color: ${`#${secondary}`};
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+    
+            .subtitle {
+                font-size: 2rem;
+            }
+    
+            .next {
+                background-color: ${`#${contrast2}`};
+                color: ${`#${secondary}`};
+                min-width: 24ch;
+                flex-grow: 0;
+                font-size: 1rem;
+        
+                &:hover {
+                    background-color: ${`#${contrast2}`};
+                    box-shadow: 0px 6px 16px -8px ${`#${secondary}`};
+                }
+        
+                transition: box-shadow 0.4s;
+        
+                @media ${Device.lg} {
+                    font-size: 0.8rem;
+                    min-width: 0ch;
+                    padding: 1rem 2rem;
+                }
+            }
+        }    
     }
+
+
 
     .button {
         font-size: 1rem;
@@ -90,55 +142,6 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
             font-size: 0.8rem;
         }
     }
-
-    .next {
-        background-color: ${`#${contrast2}`};
-        color: ${`#${primary}`};
-        min-width: 24ch;
-        flex-grow: 0;
-        font-size: 1rem;
-
-        &:hover {
-            background-color: ${`#${contrast2}`};
-            box-shadow: 0px 4px 5px 2px ${`#${secondary}`};
-        }
-
-        transition: box-shadow 0.4s;
-
-        @media ${Device.lg} {
-            font-size: 0.8rem;
-            min-width: 0ch;
-            padding: 1rem 2rem;
-        }
-    }
-
-    .modal {
-        position: absolute;
-        width: 100vw;
-        padding: 4rem;
-        opacity: 0;
-        top: auto;
-        left: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        justify-content: center;
-        align-items: center;
-        background-color: ${`#${contrast}`};
-        font-size: 2rem;
-        color: ${`#${primary}`};
-        overflow-x: hidden;
-        overflow-y: hidden;
-
-        ${(props) => (props.isCorrect ? "opacity: 1;" : "")}
-        transition: opacity 1s;
-        z-index: 999;
-
-        @media ${Device.lg} {
-            padding: 2rem;
-            font-size: 1rem;
-        }
-    }
 `;
 
 function App() {
@@ -148,10 +151,13 @@ function App() {
     const [incorrectAnswers, setIncorrectAnswers] = useState<
         Array<CountryCode>
     >([]);
-    const [currentStreak, setCurrentStreak] = useState(0);
+    const [currentScore, setCurrentScore] = useState(0);
+    const [bestScore, setBestScore] = useState(0);
     const countryCodes: CountryCode[] = Object.keys(
         Countries
     ) as unknown as CountryCode[];
+
+    console.log('Rerender')
 
     const randomInRange = (min: number, max: number) => {
         return Math.floor(Math.random() * (max - min)) + min;
@@ -172,7 +178,7 @@ function App() {
             }
         }
         setCountry(nextCountry);
-        setOptions(nextOptions);
+        setOptions(randomiseOptions(nextOptions));
         setIncorrectAnswers([]);
         setIsCorrect(false);
     };
@@ -181,26 +187,29 @@ function App() {
         if (val === country) {
             setIsCorrect(true);
             if (incorrectAnswers.length === 0) {
-                setCurrentStreak(currentStreak + 1);
+                if (currentScore + 1 > bestScore) {
+                    setBestScore(currentScore + 1);
+                }
+                setCurrentScore(currentScore + 1);
             }
         } else {
             setIncorrectAnswers([...incorrectAnswers, val]);
-            setCurrentStreak(0);
+            setCurrentScore(0);
         }
     };
 
-    const getOptionsInRandomOrder = (): CountryCode[] => {
+    const randomiseOptions = (selectedOptions: CountryCode[]): CountryCode[] => {
         var usedIndexes: number[] = [];
         var nextOptions: CountryCode[] = [];
         while (usedIndexes.length < 4) {
             var index = randomInRange(0, 4);
             if (!usedIndexes.includes(index)) {
                 usedIndexes.push(index);
-                nextOptions.push(options[index]);
+                nextOptions.push(selectedOptions[index]);
             }
         }
         return nextOptions;
-    };
+    }
 
     useEffect(() => {
         nextCountry();
@@ -217,38 +226,43 @@ function App() {
                 src={`images/${country.toLowerCase()}.png`}
                 alt="Country Flag"
             />
-            <div className="options">
-                {getOptionsInRandomOrder().map((option) => {
-                    return (
-                        <button
-                            className="button"
-                            onClick={() => checkAnswer(option)}
-                            style={
-                                inIncorrectAnwers(option)
-                                    ? { backgroundColor: `#${incorrect}` }
-                                    : isCorrect && option === country
-                                    ? { backgroundColor: `#${correct}` }
-                                    : undefined
-                            }
-                            disabled={inIncorrectAnwers(option) || isCorrect}
-                        >
-                            {Countries[option]}
+            
+
+            <div className="bottom">
+                {isCorrect ? (
+                    <div className="correct">
+                        <div className="subtitle">Correct!</div>
+                        You chose: {Countries[country]}
+                        <button className="button next" onClick={nextCountry}>
+                            Next Country
                         </button>
-                    );
-                })}
+                        {(currentScore === bestScore && currentScore > 0) ? <div>New high score! {bestScore}</div> : null }
+                    </div>
+                ) : <div className="game">
+                        <div className="options">
+                            {options.map((option) => {
+                                return (
+                                    <button
+                                        className="button"
+                                        onClick={() => checkAnswer(option)}
+                                        style={
+                                            inIncorrectAnwers(option)
+                                                ? { backgroundColor: `#${incorrect}` }
+                                                : isCorrect && option === country
+                                                ? { backgroundColor: `#${correct}` }
+                                                : undefined
+                                        }
+                                        disabled={inIncorrectAnwers(option) || isCorrect}
+                                    >
+                                        {Countries[option]}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className="score">Score: {currentScore}</p>
+                    </div>
+                }
             </div>
-
-            {/* <h1 className="title">Guess the Flag</h1> */}
-            <p className="streak">Streak: {currentStreak}</p>
-
-            {isCorrect ? (
-                <div className="modal">
-                    <div>Correct!</div>
-                    <button className="button next" onClick={nextCountry}>
-                        Next Country
-                    </button>
-                </div>
-            ) : null}
         </StyledApp>
     );
 }
