@@ -22,7 +22,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "publish": "react-scripts build && gh-pages -d build",
+    "deploy": "git checkout gh-pages && git merge main && react-scripts build && gh-pages -d build && git checkout main",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
