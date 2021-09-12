@@ -59,6 +59,10 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
             flex-direction: column;
             align-items: center;
             gap: 1rem;
+
+            @media ${Device.lg} {
+                width: 80%;
+            }
     
             .score {
                 color: ${`#${secondary}`};
@@ -71,10 +75,6 @@ const StyledApp = styled.div<{ isCorrect: boolean }>`
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 1rem;
-        
-                @media ${Device.lg} {
-                    width: 80%;
-                }
             }
         }
 
